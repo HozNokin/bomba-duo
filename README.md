@@ -14,7 +14,10 @@ Um jogador é o **🧨 Agente em Campo** (vê a bomba) e o outro é o **📖 Esp
 2. Digitam o **MESMO código de sala** (só letras, até 7 — ex: `AMOR`)
 3. Escolhem o modo no switch: **😌 Fácil** ou **🔥 Difícil**
 4. Um escolhe **🧨 Agente**, o outro **📖 Especialista**
-5. Ligam o áudio (ou ficam lado a lado) e começam juntos!
+5. Na tela de confirmação, leiam o **código da sala**, o **modo** e os **papéis** em voz alta. Se algo estiver diferente, usem **Voltar e corrigir**
+6. Combinem o início por voz e **cada jogador segura o botão por 3 segundos** no próprio celular. Soltar antes, tirar o dedo do botão ou sair da janela cancela a contagem
+
+A confirmação é individual: o jogo não detecta se o outro aparelho está pronto. O cronômetro começa no celular do Agente depois da confirmação dele. No computador, também é possível segurar **Espaço** ou **Enter** com o botão focado.
 
 > 💡 Dica: no Safari, toque em **Compartilhar → Adicionar à Tela de Início** para jogar em tela cheia, sem barra de endereço.
 
@@ -83,7 +86,11 @@ Nos celulares (mesmo Wi-Fi): `http://SEU-IP:3000` (o terminal mostra o endereço
 - **Multiplayer sem servidor:** a bomba é gerada de forma **determinística a partir do código da sala** (hash FNV-1a + PRNG Mulberry32). Mesmo código = mesma bomba nos dois aparelhos; a sincronização é feita por voz
 - **Validação local:** todas as regras são verificadas no aparelho do Agente
 - **Mobile-first:** controles touch grandes, `viewport-fit=cover` (notch/Dynamic Island), vibração e sons via WebAudio, `prefers-reduced-motion` respeitado
-- **Tema:** glass claro marrom (`#8B5E3C`), confortável para os olhos
+- **Tema:** central de missão em verde escuro e creme, com layout responsivo e confirmação de sala antes da partida
+
+### Testes
+
+Execute `npm test` com Node.js 18 ou superior para verificar o tempo de confirmação, cancelamentos, teclado e consistência do código/modo. Não é necessário instalar dependências.
 
 ### Estrutura
 
