@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f0e4d1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>💣 Desarme a Bomba Duo</title>
+<style>
+:root{
+  --ios-blue:#8B5E3C; --ios-green:#5D8A5A; --ios-red:#C25E4E; --ios-orange:#B07A4F;
+  --ink:#3E3226; --ink-2:#8A7560; --card:rgba(255,251,244,.72);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',Roboto,sans-serif;
+  color:var(--ink);min-height:100dvh;display:flex;flex-direction:column;align-items:center;
+  padding:max(12px,env(safe-area-inset-top)) 12px max(16px,env(safe-area-inset-bottom));
+  background:linear-gradient(135deg,#faf5ec 0%,#f0e4d1 48%,#ddc8a8 100%);
+  background-attachment:fixed;overflow-x:hidden;
+}
+/* orbes decorativos */
+body::before,body::after{content:'';position:fixed;border-radius:50%;filter:blur(70px);z-index:-1;opacity:.5;pointer-events:none}
+body::before{width:320px;height:320px;background:#e8d5b5;top:-90px;left:-90px;animation:drift 9s ease-in-out infinite alternate}
+body::after{width:300px;height:300px;background:#cbb091;bottom:-80px;right:-80px;animation:drift 11s ease-in-out infinite alternate-reverse}
+@keyframes drift{to{transform:translate(28px,22px) scale(1.08)}}
+h1{font-size:1.65rem;margin:14px 0 2px;letter-spacing:-.02em;animation:drop .5s ease both}
+.sub{color:var(--ink-2);font-size:.92rem;text-align:center;max-width:420px;margin:0 0 4px;animation:drop .5s .05s ease both}
+@keyframes drop{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.card{
+  background:var(--card);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);
+  border:1px solid rgba(255,255,255,.9);border-radius:26px;padding:18px;width:100%;max-width:430px;margin-top:12px;
+  box-shadow:0 12px 40px rgba(139,94,60,.14),0 2px 8px rgba(62,50,38,.08);
+  animation:rise .45s ease both;
+}
+@keyframes rise{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+label{font-size:.78rem;color:var(--ink-2);font-weight:600}
+button{font-size:1rem;font-weight:700;border:0;border-radius:16px;padding:15px;width:100%;cursor:pointer;margin-top:10px;transition:transform .12s ease,filter .15s ease,box-shadow .2s}
+button:active{transform:scale(.97);filter:brightness(.96)}
+.btn-primary{background:linear-gradient(180deg,#7ba273,#5D8A5A);color:#fff;box-shadow:0 6px 18px rgba(93,138,90,.35)}
+.btn-blue{background:linear-gradient(180deg,#a97c50,#8B5E3C);color:#fff;box-shadow:0 6px 18px rgba(139,94,60,.35)}
+.btn-ghost{background:rgba(255,251,244,.85);color:var(--ios-blue);border:1px solid rgba(139,94,60,.25)}
+.row{display:flex;gap:10px}.row button{flex:1;line-height:1.3}.row small{font-weight:500;opacity:.85}
+input{width:100%;padding:14px;border-radius:16px;border:1px solid rgba(0,0,0,.08);background:rgba(255,255,255,.9);color:var(--ink);font-size:1.35rem;text-align:center;letter-spacing:.3em;text-transform:uppercase;font-weight:800;outline:none}
+input:focus{border-color:#8B5E3C;box-shadow:0 0 0 4px rgba(139,94,60,.15)}
+.hud{display:flex;justify-content:space-between;align-items:center;margin:8px 0;gap:8px}
+.hud-sticky{position:sticky;top:max(8px,env(safe-area-inset-top));z-index:50;background:rgba(255,255,255,.75);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:10px 12px;margin:0 -4px;box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.timer{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:2.3rem;font-weight:800;font-variant-numeric:tabular-nums;background:#3E3226;color:#f5ead6;padding:2px 16px;border-radius:14px;min-width:118px;text-align:center;box-shadow:inset 0 2px 6px rgba(0,0,0,.4)}
+.timer.danger{color:#fff;background:linear-gradient(180deg,#d47968,#C25E4E);animation:tpulse .9s infinite}
+@keyframes tpulse{50%{transform:scale(1.05)}}
+.timer-mini{font-family:ui-monospace,'SF Mono',Menlo,monospace;font-size:1.7rem;font-weight:800;text-align:center;background:#3E3226;color:#f5ead6;border-radius:12px;padding:6px;margin-bottom:10px;font-variant-numeric:tabular-nums}
+.lives{font-size:1.25rem;filter:drop-shadow(0 2px 4px rgba(0,0,0,.15))}
+.code{font-size:.8rem;background:rgba(139,94,60,.1);border:1px dashed var(--ios-blue);color:var(--ios-blue);border-radius:10px;padding:6px 10px;letter-spacing:.2em;font-weight:800}
+.role-tag{font-size:.72rem;background:linear-gradient(180deg,#a97c50,#8B5E3C);color:#fff;border-radius:99px;padding:5px 11px;font-weight:700;box-shadow:0 3px 10px rgba(139,94,60,.3)}
+.module{background:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.9);border-radius:20px;padding:14px;margin-top:12px;box-shadow:0 4px 16px rgba(0,0,0,.06);transition:border-color .3s,transform .2s}
+.module h3{margin:0 0 10px;font-size:.95rem;letter-spacing:-.01em}
+.module.done{border-color:var(--ios-green);background:rgba(52,199,89,.12);animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.03)}100%{transform:scale(1)}}
+.wire{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.95);border:1px solid rgba(0,0,0,.06);border-radius:14px;padding:14px;margin:9px 0;cursor:pointer;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .12s}
+.wire:active{transform:scale(.98)}
+.wire.cut{opacity:.35;text-decoration:line-through;filter:grayscale(1)}
+.wire span.dot{width:30px;height:30px;border-radius:99px;flex-shrink:0;box-shadow:inset 0 -3px 6px rgba(0,0,0,.25),0 2px 6px rgba(0,0,0,.2);border:2px solid rgba(255,255,255,.8)!important}
+.sym-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sym{font-size:2.1rem;background:rgba(255,255,255,.95);border:1.5px solid rgba(0,0,0,.07);border-radius:16px;padding:16px;cursor:pointer;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05);transition:transform .12s,border-color .15s,background .15s}
+.sym:active{transform:scale(.93)}
+.sym.picked{border-color:#8B5E3C;background:rgba(139,94,60,.14);animation:pop .25s ease}
+.big-btn{font-size:1.5rem;padding:30px 20px;border-radius:28px;font-weight:900;touch-action:none;user-select:none;-webkit-user-select:none;letter-spacing:.02em;box-shadow:0 10px 26px rgba(0,0,0,.2),inset 0 2px 2px rgba(255,255,255,.4),inset 0 -4px 8px rgba(0,0,0,.2);transition:transform .1s}
+.big-btn:active{transform:scale(.95)}
+.big-btn.holding{transform:scale(.94);filter:brightness(1.12)}
+.strip{height:16px;border-radius:99px;margin-top:12px;background:rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.06);overflow:hidden;position:relative}
+.strip.busy::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:shimmer 1s infinite}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+.serial{background:#3E3226;color:#ecd9b8;font-weight:800;padding:5px 11px;border-radius:9px;display:inline-block;letter-spacing:.14em;font-family:ui-monospace,Menlo,monospace}
+.mode-row{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:12px}
+.mode-label{font-weight:800;font-size:.95rem}
+.mode-desc{text-align:center;font-size:.78rem;color:var(--ink-2);margin-top:6px;font-weight:600}
+/* An Actual Pure CSS Checkbox Slider — só CSS, sem JS no visual */
+.switch{position:relative;display:inline-block;width:64px;height:34px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:rgba(93,138,90,.45);border:1px solid rgba(93,138,90,.5);border-radius:34px;transition:background .3s;box-shadow:inset 0 2px 5px rgba(0,0,0,.15)}
+.slider::before{position:absolute;content:'';height:26px;width:26px;left:3px;top:3px;background:#fffdf8;border-radius:50%;transition:transform .3s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.switch input:checked + .slider{background:linear-gradient(180deg,#d47968,#b0513f);border-color:transparent}
+.switch input:checked + .slider::before{transform:translateX(30px)}
+.switch input:focus-visible + .slider{outline:2px solid #8B5E3C;outline-offset:2px}
+.mode-banner{text-align:center;font-size:.85rem;font-weight:800;background:rgba(139,94,60,.14);border-radius:12px;padding:8px;margin-top:8px}
+/* Só recolhe depois da classe .collapsed (delay anti clique-fantasma) */
+.module.done.collapsed .collapse{display:none}
+.module.done{padding:14px;transition:padding .3s ease}
+.module.done.collapsed{padding:10px 14px}
+.lamp{height:64px;border-radius:16px;margin-bottom:8px;border:2px solid rgba(0,0,0,.12);box-shadow:inset 0 3px 10px rgba(0,0,0,.25);transition:background .3s;animation:lampglow 1.2s infinite alternate}
+@keyframes lampglow{to{filter:brightness(1.15)}}
+.farol-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.farol-btns button{margin:0;padding:14px;font-size:.85rem;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.4)}
+.cofre-row{display:flex;gap:10px;justify-content:center;margin:8px 0}
+.cofre-dig{background:rgba(255,255,255,.95);border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:8px 12px;text-align:center}
+.cofre-dig b{font-size:2rem;font-variant-numeric:tabular-nums;display:block;min-width:44px}
+.cofre-dig button{margin:4px 0 0;padding:8px 14px;font-size:1rem;background:rgba(139,94,60,.15);color:#3E3226}
+p.hint{font-size:.85rem;color:var(--ink-2);margin:4px 0 8px}
+.ficha{background:rgba(255,251,244,.9);border:1px solid rgba(139,94,60,.3);border-radius:12px;padding:8px 10px;margin-top:8px;font-size:.85rem;font-weight:700;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.rodas{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.roda{background:rgba(255,255,255,.95);border:1px solid rgba(0,0,0,.08);border-radius:14px;padding:8px 10px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.roda b{font-size:2.4rem;display:block;min-width:54px;font-variant-numeric:tabular-nums}
+.roda button{margin:4px 2px 0;padding:8px 15px;font-size:1.05rem;background:rgba(139,94,60,.15);color:#3E3226}
+.wlist{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.wlist span{background:rgba(139,94,60,.14);border:1px solid rgba(139,94,60,.3);border-radius:8px;padding:5px 10px;font-weight:800;letter-spacing:.1em}
+.maze-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:8px}
+.cell{aspect-ratio:1;border-radius:10px;background:rgba(255,255,255,.92);border:1px solid rgba(0,0,0,.07);display:flex;align-items:center;justify-content:center;font-size:1.35rem;box-shadow:inset 0 2px 5px rgba(0,0,0,.05)}
+.cell.me{background:linear-gradient(180deg,#c49a6c,#8B5E3C);box-shadow:0 3px 10px rgba(139,94,60,.4)}
+.cell.goal{background:rgba(93,138,90,.2);border-color:var(--ios-green)}
+.cell.trail{background:rgba(139,94,60,.14)}
+.cell.bump{animation:shake .3s;border-color:var(--ios-red)}
+.maze-pos{text-align:center;font-weight:800;margin:2px 0 8px;font-variant-numeric:tabular-nums}
+.dpad{display:grid;grid-template-columns:repeat(3,64px);gap:8px;justify-content:center;margin:8px 0}
+.dpad button{margin:0;padding:13px 0;font-size:1.35rem;border-radius:16px;background:rgba(255,251,244,.95);border:1px solid rgba(139,94,60,.35);color:#3E3226;box-shadow:0 3px 8px rgba(0,0,0,.08)}
+.maze-map{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin:8px 0}
+.mcell{aspect-ratio:1;border-radius:6px;background:#fff;border:1px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:800}
+.mcell.wall{background:#3E3226;color:#3E3226}
+.mcell.start{background:rgba(139,94,60,.3)}
+.mcell.goal{background:rgba(93,138,90,.35)}
+.manual{font-size:.9rem;line-height:1.55;color:var(--ink)}
+.manual h4{color:var(--ios-blue);margin:14px 0 6px;font-size:.95rem}
+.manual table{width:100%;border-collapse:separate;border-spacing:0;overflow:hidden;border-radius:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+.manual th{background:rgba(139,94,60,.14);color:#6f4c2f;font-size:.78rem}
+.manual td,.manual th{border:1px solid rgba(0,0,0,.06);background:rgba(255,255,255,.9);padding:8px 6px;text-align:center;font-size:.82rem}
+.manual small{color:var(--ink-2)}
+.ok{color:var(--ios-green);font-weight:800}.err{color:var(--ios-red);font-weight:800}
+.hidden{display:none!important}
+#end h2{font-size:1.8rem;margin:8px 0}
+#end.boom{animation:shake .5s}
+@keyframes shake{0%,100%{transform:none}20%{transform:translate(-8px,4px) rotate(-2deg)}40%{transform:translate(8px,-4px) rotate(2deg)}60%{transform:translate(-6px,-3px)}80%{transform:translate(6px,3px)}}
+#end.win h2{animation:pop .5s ease}
+.confetti{position:fixed;top:-20px;font-size:1.4rem;z-index:99;pointer-events:none;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(360deg)}}
+footer{color:#aeaeb2;font-size:.75rem;margin:18px;text-align:center}
+small.hint{color:var(--ink-2)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<h1>💣 Desarme a Bomba Duo</h1>
+<p class="sub">Um vê a <b>bomba</b>, o outro vê o <b>manual</b>. Conversem por voz e desarmem em 4 min!</p>
+
+<!-- TELA INICIAL -->
+<div id="screen-home" class="card">
+  <label style="font-size:.8rem;color:#9aa3b2">CÓDIGO DA SALA (inventem juntos, ex: AMOR)</label>
+  <input id="room" maxlength="7" placeholder="AMOR" value="AMOR" autocapitalize="characters" autocomplete="off" autocorrect="off" spellcheck="false" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,7)">
+  <div class="mode-row">
+    <span class="mode-label">😌 Fácil</span>
+    <label class="switch">
+      <input type="checkbox" id="diffcheck" onchange="toggleDiff()">
+      <span class="slider"></span>
+    </label>
+    <span class="mode-label">Difícil 🔥</span>
+  </div>
+  <div class="mode-desc" id="mode-desc">4 módulos • 3:00</div>
+  <div class="row">
+    <button class="btn-blue" onclick="start('campo')">🧨 Sou o Agente<br><small>(vejo a bomba)</small></button>
+    <button class="btn-ghost" onclick="start('manual')">📖 Sou Especialista<br><small>(vejo o manual)</small></button>
+  </div>
+  <p style="font-size:.8rem;color:#9aa3b2">COMO JOGAR: abram o mesmo link nos 2 celulares, digitem o MESMO código e escolham papéis diferentes. Código terminado em <b>X</b> = modo DIFÍCIL! Liguem o áudio e comecem juntos!</p>
+</div>
+
+<!-- TELA CAMPO -->
+<div id="screen-campo" class="card hidden" style="max-width:480px">
+  <div class="hud hud-sticky">
+    <div><div class="timer" id="timer">4:00</div><span class="code" id="code-campo" style="font-size:.75rem"></span></div>
+    <div style="text-align:right"><div class="lives" id="lives">❤️❤️❤️</div><div>Série: <span class="serial" id="serial"></span></div></div>
+  </div>
+  <div id="ficha" class="ficha"></div>
+  <div id="bomb"></div>
+  <div id="mode-banner" class="mode-banner"></div>
+  <div id="end" class="hidden" style="text-align:center;padding:16px"></div>
+  <button class="btn-ghost" onclick="location.reload()">↩️ Recomeçar</button>
+</div>
+
+<!-- TELA MANUAL -->
+<div id="screen-manual" class="card hidden" style="max-width:520px">
+  <div class="hud"><div><span class="role-tag">ESPECIALISTA</span> <span class="code" id="code-manual"></span></div></div>
+  <p style="font-size:.85rem">O Agente descreve o que vê. Você lê a regra e diz o que fazer. <b>Não mostre sua tela!</b></p>
+  <div id="mode-banner-m" class="mode-banner"></div>
+  <div class="manual" id="manual"></div>
+  <button class="btn-ghost" onclick="location.reload()">↩️ Recomeçar</button>
+</div>
+
+<footer>v0 protótipo • 100% offline com código compartilhado • feito pra jogar a dois 💛</footer>
+
+<script>
+// --- RNG com seed do código da sala (mesmo código = mesma bomba) ---
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+
+const CORES={vermelho:'#ef4444',azul:'#3b82f6',amarelo:'#eab308',branco:'#e5e7eb',preto:'#111827'};
+const FAROL_MAP={vermelho:'azul',azul:'amarelo',amarelo:'branco',branco:'vermelho'};
+const SIMBOLOS=['★','Ω','Ψ','Ϟ','Æ','Ø','©','☆','☂','♫','♠','♦'];
+let state;
+
+function fmt(t){return `${Math.floor(t/60)}:${String(t%60).padStart(2,'0')}`}
+function markDone(id,label){
+  const m=document.getElementById(id);if(!m)return;
+  m.classList.add('done');
+  const h=m.querySelector('h3');if(h)h.textContent=label+' ✅';
+  lastDoneTime=Date.now();
+  // recolhe só após 450ms: dá tempo do dedo sair da tela sem vazar clique pro módulo de baixo
+  setTimeout(()=>{m.classList.add('collapsed')},450);
+}
+
+function toggleDiff(){
+  const hard=document.getElementById('diffcheck').checked;
+  const inp=document.getElementById('room');
+  let base=(inp.value||'').toUpperCase().replace(/X$/,'');
+  if(base.length>6)base=base.slice(0,6);
+  inp.value=hard?(base+'X'):base;
+  document.getElementById('mode-desc').textContent=hard?'7 módulos • 5:00':'4 módulos • 3:00';
+  beep(hard?700:500,.08);
+}
+
+function genBomb(seedStr){
+  const rnd=mulberry(hash(seedStr.toUpperCase()));
+  const pick=a=>a[Math.floor(rnd()*a.length)];
+  const serial=''+Math.floor(rnd()*9)+Math.floor(rnd()*9)+pick(['A','B','C'])+Math.floor(rnd()*9);
+  const serialPar=parseInt(serial[serial.length-1])%2===0;
+  // Fios: 4 fios
+  const nomes=Object.keys(CORES);
+  const fios=Array.from({length:4},()=>pick(nomes));
+  // regra dos fios (simplificada e legível no manual):
+  // calcula fio correto
+  let fioCerto;
+  const nVerm=fios.filter(f=>f==='vermelho').length;
+  if(nVerm===0) fioCerto=1;
+  else if(serialPar&&nVerm>=1) fioCerto=1;
+  else if(fios[3]==='amarelo') fioCerto=3;
+  else if(fios.filter(f=>f==='azul').length===1) fioCerto=0;
+  else fioCerto=2;
+  // Botão
+  const btn={cor:pick(['vermelho','amarelo','azul','branco']),texto:pick(['ABORTA','DETONA','SEGURA'])};
+  let btnRegra;
+  if(btn.texto==='DETONA'&&btn.cor==='vermelho') btnRegra={acao:'segurar',soltarEm:'1'};
+  else if(btn.cor==='amarelo') btnRegra={acao:'segurar',soltarEm:'5'};
+  else if(btn.texto==='ABORTA') btnRegra={acao:'tocar'};
+  else btnRegra={acao:'segurar',soltarEm:'2'};
+  // Símbolos: escolhe 1 coluna do manual
+  const colunas=[['★','Ω','Ψ','Ϟ'],['Æ','Ø','©','☆'],['☂','♫','♠','♦'],['Ω','☆','♠','★']];
+  const col=colunas[Math.floor(rnd()*colunas.length)];
+  const embaralhado=[...col].sort(()=>rnd()-.5);
+  // Labirinto cego 5x5: paredes = células bloqueadas (só o manual vê). Garante caminho S->F.
+  const MSZ=5;
+  const inB=(r,c)=>r>=0&&c>=0&&r<MSZ&&c<MSZ;
+  const hasPath=w=>{
+    const seen=new Set(['0,0']);const q=[[0,0]];
+    while(q.length){const [r,c]=q.pop();
+      if(r===MSZ-1&&c===MSZ-1)return true;
+      for(const [dr,dc] of [[1,0],[-1,0],[0,1],[0,-1]]){
+        const nr=r+dr,nc=c+dc,k=nr+','+nc;
+        if(!inB(nr,nc)||seen.has(k)||w.has(k))continue;
+        seen.add(k);q.push([nr,nc]);
+      }}
+    return false;
+  };
+  let walls=new Set(),tries=0;
+  while(tries++<100){
+    walls=new Set();
+    while(walls.size<6){
+      const r=Math.floor(rnd()*MSZ),c=Math.floor(rnd()*MSZ);
+      if((r===0&&c===0)||(r===MSZ-1&&c===MSZ-1))continue;
+      walls.add(r+','+c);
+    }
+    if(hasPath(walls))break;
+  }
+  const maze={size:MSZ,walls:[...walls]};
+  // Cofre (mão dupla): chave1 = nº de VERMELHOS originais; chave2 = posição 1-4 do 1º AMARELO (0 se não tem)
+  const cofre={code:''+fios.filter(f=>f==='vermelho').length+(fios.indexOf('amarelo')>=0?fios.indexOf('amarelo')+1:0)};
+  // Farol: 3 rodadas; flash -> toque (mapa no manual)
+  const FCOL=['vermelho','azul','amarelo','branco'];
+  const farol={rounds:Array.from({length:3},()=>pick(FCOL))};
+  // Senha (mão dupla invertida): 1 palavra formável nas 3 rodinhas (unicidade garantida)
+  const PALAVRAS=['SOL','MAR','LUA','MEL','PAZ','RIO','DIA','AMO','ECO','ASA','OVO','UVA'];
+  const alvo=PALAVRAS[Math.floor(rnd()*PALAVRAS.length)];
+  const LETRAS='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const rodasPara=pal=>[0,1,2].map(i=>{
+    const set=new Set([pal[i]]);let g=0;
+    while(set.size<6&&g++<80)set.add(LETRAS[Math.floor(rnd()*26)]);
+    return [...set].sort(()=>rnd()-.5);
+  });
+  const formavel=(w,rd)=>[...w].every((ch,i)=>rd[i].includes(ch));
+  let rodas=rodasPara(alvo),tent=0;
+  while(tent++<80){
+    const cand=PALAVRAS.filter(w=>formavel(w,rodas));
+    if(cand.length===1&&cand[0]===alvo)break;
+    rodas=rodasPara(alvo);
+  }
+  const senha={alvo,rodas};
+  return {serial,serialPar,fios,fioCerto,btn,btnRegra,col,embaralhado,maze,cofre,farol,senha};
+}
+
+function start(papel){
+  // O modo viaja no código: terminado em X = DIFÍCIL (mesmo código = mesmo modo, sem dessinc)
+  let code=(document.getElementById('room').value||'AMOR').toUpperCase().replace(/[^A-Z]/g,'').slice(0,7);
+  if(!code)code='AMOR';
+  if(code.length<4)code=(code+'AAAA').slice(0,4);
+  const mode=code.endsWith('X')?'dificil':'facil';
+  const time=mode==='dificil'?300:180;
+  state={code,mode,bomb:genBomb(code),lives:3,time,done:{fios:false,btn:false,sym:false,laby:false,cofre:false,farol:false,senha:false},symClicks:[],mazePos:{r:0,c:0},visited:new Set(['0,0']),bumps:0,cofre:[0,0],farolRound:0,roda:[0,0,0],over:false,timerId:null};
+  document.getElementById('screen-home').classList.add('hidden');
+  if(papel==='campo'){
+    document.getElementById('screen-campo').classList.remove('hidden');
+    document.getElementById('code-campo').textContent=code;
+    document.getElementById('timer').textContent=fmt(time);
+    renderBomb(); startTimer();
+  }else{
+    document.getElementById('screen-manual').classList.remove('hidden');
+    document.getElementById('code-manual').textContent=code;
+    renderManual();
+  }
+}
+
+// ===== AGENTE =====
+function renderBomb(){
+  const b=state.bomb,hard=state.mode==='dificil';
+  document.getElementById('serial').textContent=b.serial;
+  const banner=document.getElementById('mode-banner');
+  if(banner)banner.innerHTML=hard?'🔥 <b>DIFÍCIL</b> — 7 módulos • 5:00':'😌 <b>FÁCIL</b> — 4 módulos • 3:00';
+  const ficha=document.getElementById('ficha');
+  if(ficha)ficha.innerHTML=`📋 Fios: ${b.fios.map(f=>`<span style="color:${CORES[f]}">●</span>`).join(' ')} &nbsp;|&nbsp; Botão: <span style="background:${CORES[b.btn.cor]};border-radius:6px;padding:1px 8px;color:${b.btn.cor==='branco'||b.btn.cor==='amarelo'?'#3E3226':'#fff'}">${b.btn.texto}</span>`;
+  const el=document.getElementById('bomb');
+  el.innerHTML=`
+  <div class="module" id="m-fios"><h3>1️⃣ FIOS</h3><div class="collapse">
+    ${b.fios.map((f,i)=>`<div class="wire" id="w${i}" onclick="cut(${i})"><span class="dot" style="background:${CORES[f]};border:2px solid #555"></span> ${f.toUpperCase()}</div>`).join('')}
+  </div></div>
+  <div class="module" id="m-btn"><h3>2️⃣ BOTÃO</h3><div class="collapse">
+    <div class="timer-mini" id="timer-mini">${fmt(state.time)}</div>
+    <button class="big-btn" id="bigbtn" style="background:${CORES[b.btn.cor]};color:${b.btn.cor==='branco'||b.btn.cor==='amarelo'?'#000':'#fff'}">${b.btn.texto}</button>
+    <div class="strip" id="strip"></div>
+    <small style="color:#9aa3b2">Toque rápido = apertar e soltar • Segurar = pressione e fique segurando até a faixa aparecer, solte no número certo</small>
+  </div></div>
+  <div class="module" id="m-sym"><h3>3️⃣ SÍMBOLOS</h3><div class="collapse">
+    <div class="sym-grid">${b.embaralhado.map((s,i)=>`<div class="sym" id="s${i}" onclick="symClick(${i})">${s}</div>`).join('')}</div>
+    <small style="color:#9aa3b2">Toque nos 4 na ordem certa (pergunte ao especialista)</small>
+  </div></div>
+  <div class="module" id="m-laby"><h3>4️⃣ LABIRINTO CEGO</h3><div class="collapse">
+    <div class="maze-pos" id="maze-pos">Linha 1 • Coluna 1</div>
+    <div class="maze-grid" id="maze-grid"></div>
+    <small style="color:#9aa3b2">Você é o 🤖 e a saída é 🏁. Você <b>NÃO vê as paredes</b> — só o especialista vê! Fale sua posição e obedeça.</small>
+    <div class="dpad">
+      <span></span><button onclick="mazeMove(-1,0)">⬆️</button><span></span>
+      <button onclick="mazeMove(0,-1)">⬅️</button><button onclick="mazeMove(1,0)">⬇️</button><button onclick="mazeMove(0,1)">➡️</button>
+    </div>
+    <small style="color:#9aa3b2">Esbarrões na parede: <b id="bumps">0</b> (a cada 2 = 1 erro da equipe)</small>
+  </div></div>
+  ${hard?`
+  <div class="module" id="m-cofre"><h3>5️⃣ COFRE</h3><div class="collapse">
+    <p class="hint">O Especialista tem a fórmula — responda o que ele perguntar e digite o código!</p>
+    <div class="cofre-row">
+      <div class="cofre-dig"><b id="cf0">0</b><button onclick="cofreCh(0,-1)">−</button><button onclick="cofreCh(0,1)">+</button></div>
+      <div class="cofre-dig"><b id="cf1">0</b><button onclick="cofreCh(1,-1)">−</button><button onclick="cofreCh(1,1)">+</button></div>
+    </div>
+    <button class="btn-blue" onclick="cofreOk()">🔓 CONFIRMAR</button>
+  </div></div>
+  <div class="module" id="m-farol"><h3>6️⃣ FAROL</h3><div class="collapse">
+    <div class="lamp" id="lamp"></div>
+    <p class="hint" id="farol-txt"></p>
+    <div class="farol-btns">${['vermelho','azul','amarelo','branco'].map(c=>`<button onclick="farolPress('${c}')" style="background:${CORES[c]};color:${c==='branco'||c==='amarelo'?'#3E3226':'#fff'}">${c.toUpperCase()}</button>`).join('')}</div>
+    <small style="color:#9aa3b2">Anuncie a cor do farol pro especialista e toque onde ele mandar! (3 rodadas)</small>
+  </div></div>
+  <div class="module" id="m-senha"><h3>7️⃣ SENHA</h3><div class="collapse">
+    <p class="hint">O Especialista tem a lista de palavras — leia pra ele as letras de cada roda!</p>
+    <div class="rodas" id="rodas"></div>
+    <button class="btn-blue" onclick="senhaOk()">✅ CONFIRMAR</button>
+  </div></div>`:''}`;
+  bindBtn();renderMaze();
+  if(hard){renderFarol();renderSenha();}
+}
+function beep(f=440,d=.15){try{const c=new (window.AudioContext||window.webkitAudioContext)();const o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=f;o.start();g.gain.exponentialRampToValueAtTime(.001,c.currentTime+d);o.stop(c.currentTime+d)}catch(e){}}
+function strike(msg){
+  if(state.over)return;
+  state.lives--;beep(150,.4);navigator.vibrate&&navigator.vibrate(300);
+  document.getElementById('lives').textContent='❤️'.repeat(state.lives)+'🖤'.repeat(3-state.lives);
+  alert('❌ ERROU! '+msg+`\nVidas: ${state.lives}`);
+  if(state.lives<=0) gameOver(false);
+}
+function checkWin(){const d=state.done;const base=d.fios&&d.btn&&d.sym&&d.laby;if(state.mode==='dificil'){if(base&&d.cofre&&d.farol&&d.senha)gameOver(true);}else if(base)gameOver(true);}
+function renderMaze(){
+  const mz=state.bomb.maze,g=document.getElementById('maze-grid');if(!g)return;
+  let h='';
+  for(let r=0;r<mz.size;r++)for(let c=0;c<mz.size;c++){
+    const isMe=state.mazePos.r===r&&state.mazePos.c===c;
+    const isGoal=r===mz.size-1&&c===mz.size-1;
+    const cls=isMe?'cell me':isGoal?'cell goal':state.visited.has(r+','+c)?'cell trail':'cell';
+    const emo=isMe?'🤖':isGoal?'🏁':'';
+    h+=`<div class="${cls}" id="mz-${r}-${c}">${emo}</div>`;
+  }
+  g.innerHTML=h;
+  const p=document.getElementById('maze-pos');
+  if(p)p.textContent=`Linha ${state.mazePos.r+1} • Coluna ${state.mazePos.c+1}`;
+}
+function mazeMove(dr,dc){
+  if(state.over||state.done.laby||ghostBlock())return;
+  const mz=state.bomb.maze;
+  const nr=state.mazePos.r+dr,nc=state.mazePos.c+dc;
+  const bump=()=>{
+    state.bumps++;beep(150,.25);if(navigator.vibrate)navigator.vibrate(200);
+    const b=document.getElementById('bumps');if(b)b.textContent=state.bumps;
+    const cell=document.getElementById(`mz-${state.mazePos.r}-${state.mazePos.c}`);
+    if(cell){cell.classList.add('bump');setTimeout(()=>cell.classList.remove('bump'),320);}
+    if(state.bumps%2===0)strike('Esbarrou na parede do labirinto! O especialista precisa guiar com calma.');
+  };
+  if(nr<0||nc<0||nr>=mz.size||nc>=mz.size){bump();return;}
+  if(mz.walls.includes(nr+','+nc)){bump();return;}
+  state.mazePos={r:nr,c:nc};state.visited.add(nr+','+nc);beep(520,.07);
+  if(nr===mz.size-1&&nc===mz.size-1){state.done.laby=true;markDone('m-laby','4️⃣ LABIRINTO CEGO');beep(880,.3);renderMaze();checkWin();return;}
+  renderMaze();
+}
+// ===== MODO DIFÍCIL =====
+function cofreCh(i,d){
+  if(state.over||state.done.cofre||ghostBlock())return;
+  state.cofre[i]=(state.cofre[i]+d+10)%10;beep(500,.06);
+  document.getElementById('cf'+i).textContent=state.cofre[i];
+}
+function cofreOk(){
+  if(state.over||state.done.cofre||ghostBlock())return;
+  if(state.cofre.join('')===state.bomb.cofre.code){state.done.cofre=true;markDone('m-cofre','5️⃣ COFRE');beep(880,.3);checkWin();}
+  else strike('Código do cofre errado! Confira com o especialista (fios ORIGINAIS!).');
+}
+function renderFarol(){
+  const r=state.bomb.farol.rounds[state.farolRound];if(!r)return;
+  const lamp=document.getElementById('lamp');if(lamp)lamp.style.background=CORES[r];
+  const t=document.getElementById('farol-txt');
+  if(t)t.textContent=`Rodada ${state.farolRound+1} de 3 — o farol está ${r.toUpperCase()}! Anuncie!`;
+}
+function farolPress(c){
+  if(state.over||state.done.farol||ghostBlock())return;
+  const flash=state.bomb.farol.rounds[state.farolRound];
+  if(c===FAROL_MAP[flash]){
+    state.farolRound++;beep(700+state.farolRound*120,.12);
+    if(state.farolRound>=3){state.done.farol=true;markDone('m-farol','6️⃣ FAROL');beep(880,.3);checkWin();}
+    else renderFarol();
+  }
+  else strike(`Farol ${flash.toUpperCase()} não se apaga com ${c.toUpperCase()}! Pergunte a tabela ao especialista.`);
+}
+function renderSenha(){
+  const box=document.getElementById('rodas');if(!box)return;
+  box.innerHTML=state.bomb.senha.rodas.map((letras,i)=>`
+    <div class="roda"><button onclick="senroda(${i},-1)">▲</button><b id="rl${i}">${letras[state.roda[i]]}</b><button onclick="senroda(${i},1)">▼</button></div>`).join('');
+}
+function senroda(i,d){
+  if(state.over||state.done.senha||ghostBlock())return;
+  const n=state.bomb.senha.rodas[i].length;
+  state.roda[i]=(state.roda[i]+d+n)%n;beep(520,.06);
+  const b=document.getElementById('rl'+i);if(b)b.textContent=state.bomb.senha.rodas[i][state.roda[i]];
+}
+function senhaOk(){
+  if(state.over||state.done.senha||ghostBlock())return;
+  const tentativa=state.roda.map((idx,i)=>state.bomb.senha.rodas[i][idx]).join('');
+  if(tentativa===state.bomb.senha.alvo){state.done.senha=true;markDone('m-senha','7️⃣ SENHA');beep(880,.3);checkWin();}
+  else strike(`Senha errada! A palavra era outra — releia as letras com o especialista.`);
+}
+function cut(i){
+  if(state.over||state.done.fios||ghostBlock())return;
+  document.getElementById('w'+i).classList.add('cut');beep(600,.1);
+  if(i===state.bomb.fioCerto){state.done.fios=true;markDone('m-fios','1️⃣ FIOS');beep(880,.3);checkWin();}
+  else strike('Fio errado! Pergunte ao especialista qual cortar.');
+}
+const HOLD_MS=600; // abaixo disso = toque; acima = segurar
+let holdT=null,holding=false,downT=0,pressId=0,lastDoneTime=0;
+function ghostBlock(){return Date.now()-lastDoneTime<450;}
+function bindBtn(){
+  const b=document.getElementById('bigbtn');if(!b)return;
+  b.onpointerdown=e=>{e.preventDefault();b.setPointerCapture&&tryCapture(b,e);holdStart(e)};
+  b.onpointerup=e=>{e.preventDefault();holdEnd(e)};
+  b.onpointercancel=e=>{holdEnd(e)};
+  b.oncontextmenu=e=>e.preventDefault();
+}
+function tryCapture(b,e){try{b.setPointerCapture(e.pointerId)}catch(_){}}
+function holdStart(e){
+  if(state.over||state.done.btn)return;
+  if(state.stripInt){clearInterval(state.stripInt);state.stripInt=null;}
+  const st0=document.getElementById('strip');if(st0){st0.style.background='';st0.classList.remove('busy');}
+  const b0=document.getElementById('bigbtn');if(b0)b0.classList.remove('holding');
+  holding=true;downT=Date.now();pressId++;
+  const my=pressId;
+  clearTimeout(holdT);
+  holdT=setTimeout(()=>{if(holding&&my===pressId)showStrip()},HOLD_MS);
+}
+function showStrip(){
+  // mostra faixa colorida que troca: o agente deve descrever e o especialista diz quando soltar
+  const cores=['azul','branco','amarelo','vermelho'];let i=0;
+  const st=document.getElementById('strip');
+  if(st)st.classList.add('busy');
+  const bb=document.getElementById('bigbtn');if(bb)bb.classList.add('holding');
+  state.stripInt=setInterval(()=>{st.style.background=CORES[cores[i%4]];st.dataset.cor=cores[i%4];i++},600);
+}
+function holdEnd(e){
+  if(e&&e.preventDefault)e.preventDefault();if(!holding)return;holding=false;clearTimeout(holdT);pressId++;
+  // decisão pelo cronômetro real do toque (não só pelo intervalo da faixa)
+  const held=!!state.stripInt||(Date.now()-downT>=HOLD_MS);
+  clearInterval(state.stripInt);state.stripInt=null;
+  const st=document.getElementById('strip');if(st){st.style.background='';st.classList.remove('busy');}
+  const bb=document.getElementById('bigbtn');if(bb)bb.classList.remove('holding');
+  const regra=state.bomb.btnRegra;
+  if(regra.acao==='tocar'){
+    if(!held){state.done.btn=true;markDone('m-btn','2️⃣ BOTÃO');beep(880,.3);checkWin();}
+    else strike('Era só um TOQUE! Não precisava segurar.');
+  }else{
+    if(!held){strike('Precisava SEGURAR o botão!');return}
+    // soltou segurando: precisa soltar com o segundo certo. Simplificação v0: considera acerto se timer contém o dígito
+    const t=document.getElementById('timer').textContent;
+    if(t.includes(regra.soltarEm)){state.done.btn=true;markDone('m-btn','2️⃣ BOTÃO');beep(880,.3);checkWin();}
+    else strike(`Solte quando o timer tiver o número ${regra.soltarEm}! Descreva a faixa pro especialista.`);
+  }
+}
+function symClick(i){
+  // trava anti clique-fantasma: ignora toques residuais logo após concluir um módulo
+  if(state.over||state.done.sym||ghostBlock())return;
+  const el=document.getElementById('s'+i);
+  if(!el||el.classList.contains('picked'))return; // evita duplo-toque no mesmo símbolo
+  const s=state.bomb.embaralhado[i];
+  state.symClicks.push(s);
+  document.getElementById('s'+i).classList.add('picked');beep(500+state.symClicks.length*100,.1);
+  const certo=state.bomb.col.slice(0,state.symClicks.length);
+  if(JSON.stringify(state.symClicks)!==JSON.stringify(certo)){state.symClicks=[];document.querySelectorAll('.sym').forEach(d=>d.classList.remove('picked'));strike('Ordem errada! Zere e pergunte de novo.');return}
+  if(state.symClicks.length===4){state.done.sym=true;markDone('m-sym','3️⃣ SÍMBOLOS');beep(880,.3);checkWin();}
+}
+function startTimer(){
+  const lim=state.mode==='dificil'?45:30;
+  const tick=()=>{
+    state.time--;
+    const txt=fmt(state.time);
+    const t=document.getElementById('timer');if(t)t.textContent=txt;
+    const tm=document.getElementById('timer-mini');if(tm)tm.textContent=txt;
+    if(t&&state.time<=lim)t.classList.add('danger');
+    if(tm&&state.time<=lim)tm.style.color='#ef4444';
+    if(state.time%10===0&&state.time>0)beep(700,.08);
+    if(state.time<=0)gameOver(false);
+  };
+  state.timerId=setInterval(tick,1000);
+}
+function gameOver(win){
+  state.over=true;clearInterval(state.timerId);
+  const d=document.getElementById('end');d.classList.remove('hidden');
+  d.classList.toggle('win',win);d.classList.toggle('boom',!win);
+  d.innerHTML=win?`<h2 class="ok">🎉 DESARMADA!</h2><p>Vocês são a dupla perfeita! Tempo restante: ${document.getElementById('timer').textContent}</p>`:`<h2 class="err">💥 BOOM!</h2><p>A bomba explodiu... mas o amor sobreviveu. Tentem de novo!</p>`;
+  beep(win?990:100,.6);navigator.vibrate&&navigator.vibrate(win?[100,50,100]:[500]);
+  if(win)confetti();else{beep(80,.8);}
+}
+function confetti(){
+  const emojis=['🎉','💛','✨','💘','🎊'];
+  for(let i=0;i<28;i++){
+    const s=document.createElement('span');s.className='confetti';
+    s.textContent=emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.left=Math.random()*100+'vw';s.style.animationDuration=(1.6+Math.random()*1.6)+'s';
+    s.style.fontSize=(1+Math.random()*1.2)+'rem';
+    document.body.appendChild(s);setTimeout(()=>s.remove(),3400);
+  }
+}
+
+// ===== ESPECIALISTA =====
+function renderManual(){
+  const b=state.bomb,hard=state.mode==='dificil';
+  const banner=document.getElementById('mode-banner-m');
+  if(banner)banner.innerHTML=hard?'🔥 <b>DIFÍCIL</b> — 7 módulos • 5:00 (código com X!)':'😌 <b>FÁCIL</b> — 4 módulos • 3:00';
+  const hardHtml=hard?`
+  <h4>5️⃣ COFRE (mão dupla! 🔢)</h4>
+  <p>O Agente vê o cofre mas <b>NÃO sabe a fórmula</b>. Interrogue-o e calcule:</p>
+  <table><tr><th>Dígito</th><th>Fórmula</th></tr>
+  <tr><td>1º</td><td>Nº de fios VERMELHOS <b>originais</b> (mesmo os já cortados!)</td></tr>
+  <tr><td>2º</td><td>Posição do 1º fio AMARELO (1 a 4). Se não tem amarelo = 0</td></tr></table>
+  <small>Pergunte: "quantos vermelhos?" e "qual posição do primeiro amarelo?" — dite os 2 dígitos.</small>
+  <h4>6️⃣ FAROL (mão dupla! 💡)</h4>
+  <p>O Agente vê o farol piscando mas <b>NÃO sabe o que tocar</b>. Ele anuncia a cor, você consulta e manda tocar:</p>
+  <table><tr><th>Farol pisca...</th><th>Toque...</th></tr>
+  <tr><td>VERMELHO</td><td>AZUL</td></tr>
+  <tr><td>AZUL</td><td>AMARELO</td></tr>
+  <tr><td>AMARELO</td><td>BRANCO</td></tr>
+  <tr><td>BRANCO</td><td>VERMELHO</td></tr></table>
+  <small>São 3 rodadas! A cada cor anunciada, responda rápido com a cor do toque.</small>
+  <h4>7️⃣ SENHA (mão dupla invertida! 🔤)</h4>
+  <p>O Agente tem 3 rodinhas de letras mas <b>NÃO sabe as palavras</b>. Peça as letras de cada roda ("roda 1: quais letras aparecem?") e risque candidatas — só UMA é formável:</p>
+  <div class="wlist">${['SOL','MAR','LUA','MEL','PAZ','RIO','DIA','AMO','ECO','ASA','OVO','UVA'].map(w=>`<span>${w}</span>`).join('')}</div>
+  <small>Dite a palavra final letra por letra ("roda 1 no S, roda 2 no O..."). Ele gira e confirma!</small>` :'';  document.getElementById('manual').innerHTML=`
+  <p>Sala <b>${state.code}</b> • Série do agente termina em número <b>${b.serialPar?'PAR':'ÍMPAR'}</b>? (confirme com ele: <span class="serial">${b.serial}</span>)</p>
+  <h4>1️⃣ FIOS (4 fios)</h4>
+  <table><tr><th>Se...</th><th>Corte o...</th></tr>
+  <tr><td>Não tem fio VERMELHO</td><td>2º fio</td></tr>
+  <tr><td>Tem VERMELHO e série é PAR</td><td>2º fio</td></tr>
+  <tr><td>Último fio é AMARELO</td><td>4º fio</td></tr>
+  <tr><td>Tem exatamente 1 AZUL</td><td>1º fio</td></tr>
+  <tr><td>Senão</td><td>3º fio</td></tr></table>
+  <small>Ler de cima pra baixo, primeira regra que bater vale.</small>
+  <h4>2️⃣ BOTÃO (cor + palavra)</h4>
+  <table><tr><th>Se... (nesta ordem)</th><th>Faça...</th></tr>
+  <tr><td>É VERMELHO e diz DETONA</td><td>SEGURE e solte quando o timer tiver <b>1</b> em qualquer posição (ex: 2:<b>1</b>)</td></tr>
+  <tr><td>É AMARELO (qualquer texto)</td><td>SEGURE e solte quando o timer tiver <b>5</b></td></tr>
+  <tr><td>Está escrito ABORTA</td><td>Aperte e SOLTE rápido (toque)</td></tr>
+  <tr><td>Senão</td><td>SEGURE e solte quando o timer tiver <b>2</b></td></tr></table>
+  <small>⚠️ Ler de cima pra baixo, primeira que bater vale! O Especialista NÃO vê o timer — peça pro Agente falar o tempo em voz alta. O Agente tem timer fixo no topo + mini-timer em cima do botão.</small>
+  <h4>3️⃣ SÍMBOLOS (aperte na ordem)</h4>
+  <p>Ache a coluna que tem os 4 símbolos que o agente vê (em qualquer ordem). Depois diga na ordem da coluna, de cima pra baixo:</p>
+  <table><tr><th>Col 1</th><th>Col 2</th><th>Col 3</th><th>Col 4</th></tr>
+  <tr><td>★</td><td>Æ</td><td>☂</td><td>Ω</td></tr>
+  <tr><td>Ω</td><td>Ø</td><td>♫</td><td>☆</td></tr>
+  <tr><td>Ψ</td><td>©</td><td>♠</td><td>♠</td></tr>
+  <tr><td>Ϟ</td><td>☆</td><td>♦</td><td>★</td></tr></table>
+  <h4>4️⃣ LABIRINTO CEGO (a sua hora de suar! 🧠)</h4>
+  <p>O Agente vê o 🤖 e a 🏁 mas <b>NÃO vê as paredes</b>. Só você tem o mapa. Peça a posição dele ("linha X, coluna Y", de 1 a 5) e guie um passo por vez: <b>cima, baixo, esquerda, direita</b>.</p>
+  <div class="maze-map">${(()=>{let h='';for(let r=0;r<b.maze.size;r++)for(let c=0;c<b.maze.size;c++){const k=r+','+c;const cls=b.maze.walls.includes(k)?'mcell wall':(r===0&&c===0)?'mcell start':(r===b.maze.size-1&&c===b.maze.size-1)?'mcell goal':'mcell';const t=b.maze.walls.includes(k)?'':(r===0&&c===0)?'S':(r===b.maze.size-1&&c===b.maze.size-1)?'F':'';h+=`<div class="${cls}">${t}</div>`;}return h;})()}</div>
+  <small>🟫 = parede (se ele tentar passar, esbarra) • S = início • F = saída • A cada 2 esbarrões = 1 erro da equipe. Sem pressa: confirme a posição antes de cada comando!</small>
+  ${hardHtml}
+  <p style="color:#22c55e"><b>Dica de casal:</b> leia em voz alta e divirtam-se. Errou 3x = boom!</p>`;
+}
+</script>
+</body>
+</html>
